@@ -58,6 +58,19 @@ def max_reg_hours(contents)
   reg_per_hour.select { |_, count| count == max_reg_count }.keys
 end
 
+def max_reg_wday(contents)
+  wdays = []
+
+  contents.each do |row|
+    reg_datetime = Time.strptime(row[:regdate], '%D %H:%M')
+    wdays << reg_datetime.wday
+  end
+
+  reg_per_wday = wdays.group_by(&:itself).transform_values(&:count)
+  max_reg_count = reg_per_wday.values.max
+  reg_per_wday.select { |_, count| count == max_reg_count }.keys
+end
+
 puts 'EventManager initialized.'
 
 contents = CSV.open(
