@@ -45,6 +45,19 @@ def save_thank_you_letter(id,form_letter)
   end
 end
 
+def max_reg_hours(contents)
+  hours = []
+
+  contents.each do |row|
+    reg_datetime = Time.strptime(row[:regdate], '%D %H:%M')
+    hours << reg_datetime.hour
+  end
+
+  reg_per_hour = hours.group_by(&:itself).transform_values(&:count)
+  max_reg_count = reg_per_hour.values.max
+  reg_per_hour.select { |_, count| count == max_reg_count }.keys
+end
+
 puts 'EventManager initialized.'
 
 contents = CSV.open(
@@ -53,22 +66,22 @@ contents = CSV.open(
   header_converters: :symbol
 )
 
-# template_letter = File.read('form_letter.erb')
-# erb_template = ERB.new template_letter
-
-# contents.each do |row|
-#   id = row[0]
-#   name = row[:first_name]
-#   zipcode = clean_zipcode(row[:zipcode])
-#   legislators = legislators_by_zipcode(zipcode)
-
-#   form_letter = erb_template.result(binding)
-
-#   save_thank_you_letter(id, form_letter)
-# end
+template_letter = File.read('form_letter.erb')
+erb_template = ERB.new template_letter
 
 contents.each do |row|
-  phone = clean_phone(row[:homephone])
+  id = row[0]
+  name = row[:first_name]
+  zipcode = clean_zipcode(row[:zipcode])
+  legislators = legislators_by_zipcode(zipcode)
 
-  puts phone
+  form_letter = erb_template.result(binding)
+
+  save_thank_you_letter(id, form_letter)
 end
+
+# contents.each do |row|
+#   phone = clean_phone(row[:homephone])
+
+#   puts phone
+# end
